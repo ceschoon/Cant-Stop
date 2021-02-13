@@ -5,6 +5,16 @@ Legend
 >>  Variants of the method
 
 
+Evaluation of strategies:
+-------------------------
+Play against each other and record how frequently they win and which
+opponent they fought. 
+>> Table of 1v1 scores (Asymmetric because A vs BBB may lead to different
+   results than B vs AAA if there are positive/negative interactions
+   between players using the same strategy. Do AA vs BB or useless?)
+>> Elo rating system (repeat many plays against random opponent)
+
+
 Trivial strategy:
 -----------------
 Always stop after one round.
