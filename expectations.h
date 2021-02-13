@@ -1,5 +1,5 @@
 
-#include "../cant_stop.h"
+#include "cant_stop.h"
 
 using namespace std;
 
@@ -36,13 +36,14 @@ double expectation(int target, int columns[11][4], int markers[3][2], int numGam
 	
 	_target = target;
 	
+	
 	////////////////////////////////////////////////
 	// Rng for choosing seeds of each simulation
 	
 	random_device true_gen;
 	int seed = -1; while (seed<0) seed = true_gen();
 	
-	uniform_int_distribution<int> dist(0,1000000);
+	uniform_int_distribution<int> dist(0,100000000);
 	default_random_engine gen(seed);
 	
 	

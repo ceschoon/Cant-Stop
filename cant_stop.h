@@ -42,7 +42,7 @@ struct Combination
 
 int min (int a, int b) {return (a<b)?a:b;}
 int index(int num) {return num-2;}
-int height(int i) {return (i<5)?(i+3):(13-i);}
+int height(int i) {return (i<5)?(2*i+3):(23-2*i);}
 
 void throwDice(int dice[], default_random_engine &gen);
 void scanValidCombinations(int dice[], vector<Combination> &combinations);
