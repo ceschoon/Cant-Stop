@@ -106,6 +106,9 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 	{
 		// Check if we are supposed to end after one turn for each player
 		
+		if (sparam.playOneTurn && sparam.singleplayer && turns[0]==1 )
+			break;
+		
 		if (sparam.playOneTurn && turns[0]==1 && turns[1]==1 && turns[2]==1 && turns[3]==1)
 			break;
 		
