@@ -439,7 +439,7 @@ void initialiseDefaultParameters(SimulParams &sparam)
 	sparam.singleplayer = false;
 	sparam.playOneTurn = false;
 	sparam.silent = false;
-	seed = -1;
+	sparam.seed = -1;
 }
 
 
