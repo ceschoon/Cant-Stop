@@ -50,11 +50,19 @@ void scanValidCombinations(int dice[], vector<Combination> &combinations);
 bool canBeAdvanced(int columns[][4], int markers[][2], int player, int num, int &imarker);
 void printColumns(int columns[][4], int markers[][2]);
 
-bool (*decideToStop)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+bool (*decideToStop_0)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+bool (*decideToStop_1)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+bool (*decideToStop_2)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+bool (*decideToStop_3)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+
 bool decideToStop_always(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
 bool decideToStop_never(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
 
-Combination (*selectCombination)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+Combination (*selectCombination_0)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+Combination (*selectCombination_1)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+Combination (*selectCombination_2)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+Combination (*selectCombination_3)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+
 Combination selectCombination_any(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
 
 void initialiseDefaultParameters(SimulParams &sparam);
@@ -185,9 +193,13 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 			// Find the most desirable combination
 			// and place/advance markers
 			
-			Combination comb = selectCombination(columns, markers, player, combinations);
-			int imarker;
+			Combination comb;
+			if (player==0) comb = selectCombination_0(columns, markers, player, combinations);
+			if (player==1) comb = selectCombination_1(columns, markers, player, combinations);
+			if (player==2) comb = selectCombination_2(columns, markers, player, combinations);
+			if (player==3) comb = selectCombination_3(columns, markers, player, combinations);
 			
+			int imarker;
 			if ( canBeAdvanced(columns, markers, player, comb.val1, imarker) )
 			{
 				if (markers[imarker][0]==-1) // place
@@ -219,7 +231,10 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 			
 			// Decide whether we stop or not
 			
-			if (decideToStop(columns, markers, player, combinations)) break;
+			if (player==0) if (decideToStop_0(columns, markers, player, combinations)) break;
+			if (player==1) if (decideToStop_1(columns, markers, player, combinations)) break;
+			if (player==2) if (decideToStop_2(columns, markers, player, combinations)) break;
+			if (player==3) if (decideToStop_3(columns, markers, player, combinations)) break;
 		}
 		
 		// Save marker positions if player did not loose the last round

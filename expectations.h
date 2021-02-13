@@ -30,9 +30,9 @@ double expectation(int target, int columns[11][4], int markers[3][2], int numGam
 	sparam.silent = true;
 	sparam.seed = 0; // will be overwritten
 	
-	decideToStop = &decideToStop_never;
-	if (target>0) selectCombination = &selectCombination_target;
-	else          selectCombination = &selectCombination_any;
+	decideToStop_0 = &decideToStop_never;
+	if (target>0) selectCombination_0 = &selectCombination_target;
+	else          selectCombination_0 = &selectCombination_any;
 	
 	_target = target;
 	
