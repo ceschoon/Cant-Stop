@@ -1,3 +1,6 @@
+#ifndef CANT_STOP
+#define CANT_STOP
+
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -11,6 +14,25 @@
 using namespace std;
 
 
+struct SimulParams
+{
+	bool singleplayer;
+	bool playOneTurn;
+	bool silent;
+	int seed;
+};
+
+
+struct SimulState
+{
+	int player;
+	int winner;
+	int turns[4];
+	int columns[11][4];
+	int markers[3][2];
+};
+
+
 struct Combination
 {
 	int val1;
@@ -20,7 +42,7 @@ struct Combination
 
 int min (int a, int b) {return (a<b)?a:b;}
 int index(int num) {return num-2;}
-int height(int i) {return (i<5)?(i+2):(12-i);}
+int height(int i) {return (i<5)?(i+3):(13-i);}
 
 void throwDice(int dice[], default_random_engine &gen);
 void scanValidCombinations(int dice[], vector<Combination> &combinations);
@@ -28,40 +50,51 @@ void scanValidCombinations(int dice[], vector<Combination> &combinations);
 bool canBeAdvanced(int columns[][4], int markers[][2], int player, int num, int &imarker);
 void printColumns(int columns[][4], int markers[][2]);
 
-bool decideToStop(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
-Combination selectCombination(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+bool (*decideToStop)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+bool decideToStop_always(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+bool decideToStop_never(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+
+Combination (*selectCombination)(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+Combination selectCombination_any(int columns[][4], int markers[][2], int player, vector<Combination> &combinations);
+
+void initialiseDefaultParameters(SimulParams &sparam);
+void initialiseDefaultState(SimulState &sstate);
+
+int simulGame(SimulParams sparam, SimulState &sstate);
 
 
 
 
-int main()
+int simulGame(SimulParams sparam, SimulState &sstate)
 {
-	//////////////////////////////
-	// Random number generator
-	
-	random_device true_gen;
-	int seed = true_gen();
-	cout << "seed = " << seed << endl;
-	default_random_engine gen(seed);
-	
-	
-	/////////////////////////////
+	//////////////////////////
 	// Game variables
 	
-	int player = 0;
+	default_random_engine gen(sparam.seed);
+	
+	int player; // player whos turn it is to play
+	int turns[4]; // counter of played turns for each player
+	int columns[11][4]; // col index, player
+	
+	player = sstate.player;
+	for (int i=0; i<4; i++) turns[i] = sstate.turns[i];
+	for (int i=0; i<11; i++) for (int j=0; j<4; j++) columns[i][j] = sstate.columns[i][j];
 	
 	int colsCompleted[4];
 	for (int i=0; i<4; i++) colsCompleted[i] = 0;
 	
-	
-	int turns[4]; // counter of played turns for each player
-	for (int i=0; i<4; i++) turns[i] = 0;
-	
-	int columns[11][4]; // col index, player
-	for (int i=0; i<11; i++) for (int p=0; p<4; p++) columns[i][p] = -1;
-	
 	int markers[3][2]; // first [] denotes which of the 3 makers, second [] is to select the marker's column (use [0]) or the position in the column (use [1])
 	int dice[4];
+	
+	if (!sparam.silent)
+	{
+		cout << "==========================================" << endl;
+		cout << "  Starting game simulation                " << endl;
+		cout << "==========================================" << endl;
+		cout << "singleplayer = " << sparam.singleplayer << endl;
+		cout << "playOneTurn  = " << sparam.playOneTurn << endl;
+		cout << "seed = " << sparam.seed << endl;
+	}
 	
 	//////////////////////////////////////
 	// Game loop
@@ -69,6 +102,11 @@ int main()
 	while (colsCompleted[0]<3 && colsCompleted[1]<3 &&
 	       colsCompleted[2]<3 && colsCompleted[3]<3)
 	{
+		// Check if we are supposed to end after one turn for each player
+		
+		if (sparam.playOneTurn && turns[0]==1 && turns[1]==1 && turns[2]==1 && turns[3]==1)
+			break;
+		
 		// Reset markers and round variables
 		
 		for (int i=0; i<3; i++) markers[i][0] = -1;
@@ -80,11 +118,14 @@ int main()
 		
 		// Play rounds
 		
-		cout << "==========================================" << endl;
-		cout << "  New turn for player: " << player;
-		cout <<                         "  turn:" << setw(3) << turns[player];
-		cout <<                                   "        " << endl;
-		cout << "==========================================" << endl;
+		if (!sparam.silent)
+		{
+			cout << "==========================================" << endl;
+			cout << "  New turn for player: " << player;
+			cout <<                         "  turn:" << setw(3) << turns[player];
+			cout <<                                   "        " << endl;
+			cout << "==========================================" << endl;
+		}
 		
 		while (!lostRound)
 		{
@@ -114,18 +155,21 @@ int main()
 			
 			// Show dices and print board in console
 			
-			if (roundCounter>1) cout << "------------------------------------------" << endl;
-			cout << "Player:  " << player << endl;
-			cout << "Turn:    " << turns[player] << endl;
-			cout << "Round:   " << roundCounter << endl;
-			cout << "Dices:   "; for (int i=0; i<4; i++) cout << dice[i] << " "; cout << endl;
-			cout << "Pairs:   "; for (int i=0; i<combinations.size(); i++) cout << "{" << combinations[i].val1 << "," << combinations[i].val2 << "} "; cout << endl;
+			if (!sparam.silent)
+			{
+				if (roundCounter>1) cout << "------------------------------------------" << endl;
+				cout << "Player:  " << player << endl;
+				cout << "Turn:    " << turns[player] << endl;
+				cout << "Round:   " << roundCounter << endl;
+				cout << "Dices:   "; for (int i=0; i<4; i++) cout << dice[i] << " "; cout << endl;
+				cout << "Pairs:   "; for (int i=0; i<combinations.size(); i++) cout << "{" << combinations[i].val1 << "," << combinations[i].val2 << "} "; cout << endl;
+			}
 			
 			// Force stop if none can be played
 			
 			if (combinations.size()==0)
 			{
-				cout << ">>> Player lost the round" << endl;
+				if (!sparam.silent) cout << ">>> Player lost the round" << endl;
 				lostRound = true;
 				break;
 			}
@@ -159,7 +203,11 @@ int main()
 			
 			// Print board state after round
 			
-			cout << "Board:   " << endl; printColumns(columns, markers);
+			if (!sparam.silent) 
+			{
+				cout << "Board:   " << endl; 
+				printColumns(columns, markers);
+			}
 			
 			// Decide whether we stop or not
 			
@@ -185,23 +233,37 @@ int main()
 		for (int p=0; p<4; p++) for (int i=0; i<11; i++)
 		if (columns[i][p]==height(i)-1) colsCompleted[p]++;
 		
-		player = (player+1)%4;
+		if (!sparam.singleplayer) player = (player+1)%4;
 	}
+	
+	
+	/////////////////////////////////////
+	// Save simulation end state
+	
+	int winner = player-1; if (winner<0) winner += 4;
+	
+	sstate.player  = player;
+	sstate.winner  = winner;
+	for (int i=0; i<4; i++) sstate.turns[i] = turns[i];
+	for (int i=0; i<11; i++) for (int j=0; j<4; j++) sstate.columns[i][j] = columns[i][j];
+	for (int i=0; i<3; i++) for (int j=0; j<4; j++) sstate.markers[i][j] = markers[i][j];
 	
 	
 	/////////////////////////////////////
 	// Print final board state
 	
-	cout << "==========================================" << endl;
-	cout << "  Game Over                               " << endl;
-	cout << "==========================================" << endl;
+	if (!sparam.silent)
+	{
+		cout << "==========================================" << endl;
+		cout << "  Game Over                               " << endl;
+		cout << "==========================================" << endl;
+		
+		cout << "Winner: " << winner << endl;
+		cout << "Columns completed: "; for (int p=0; p<4; p++) cout << colsCompleted[p] << " "; cout << endl;
+		cout << "Board:" << endl;
+		printColumns(columns, markers);
+	}
 	
-	cout << "Columns completed: "; for (int p=0; p<4; p++) cout << colsCompleted[p] << " "; cout << endl;
-	
-	printColumns(columns, markers);
-	
-	/////////////////////////////////////
-	// End of game loop
 	
 	return 0;
 }
@@ -346,11 +408,14 @@ void printColumns(int columns[][4], int markers[][2])
 
 
 
-bool decideToStop(int columns[][4], int markers[][2], int player, vector<Combination> &combinations)
+bool decideToStop_always(int columns[][4], int markers[][2], int player, vector<Combination> &combinations)
 {
-	// TODO (currently trivial -- stop every time)
-	
 	return true;
+}
+
+bool decideToStop_never(int columns[][4], int markers[][2], int player, vector<Combination> &combinations)
+{
+	return false;
 }
 
 
@@ -359,13 +424,41 @@ bool decideToStop(int columns[][4], int markers[][2], int player, vector<Combina
 // value on which to place a marker is in the first position. Otherwise
 // the wrong value can be placed in case only one marker is available.
 
-Combination selectCombination(int columns[][4], int markers[][2], int player, vector<Combination> &combinations)
+Combination selectCombination_any(int columns[][4], int markers[][2], int player, vector<Combination> &combinations)
 {
-	// TODO (currently trivial -- choose always the first one)
-	
+	// random ordering so choosing the first is not a bias
 	return combinations[0];
 }
 
 
+
+void initialiseDefaultParameters(SimulParams &sparam)
+{
+	sparam.singleplayer = false;
+	sparam.playOneTurn = false;
+	sparam.silent = false;
+	
+	random_device true_gen;
+	sparam.seed = true_gen();
+}
+
+
+
+void initialiseDefaultState(SimulState &sstate)
+{
+	sstate.player = 0;
+	sstate.winner = -1;
+	
+	for (int i=0; i<4; i++) sstate.turns[i] = 0;
+	
+	for (int i=0; i<11; i++) for (int p=0; p<4; p++) sstate.columns[i][p] = -1;
+	
+	for (int i=0; i<3; i++) sstate.markers[i][0] = -1;
+	for (int i=0; i<3; i++) sstate.markers[i][1] = -1;
+}
+
+
+
+#endif //CANT_STOP
 
 
