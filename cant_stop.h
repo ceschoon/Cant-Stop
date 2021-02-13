@@ -70,7 +70,9 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 	//////////////////////////
 	// Game variables
 	
-	default_random_engine gen(sparam.seed);
+	int seed = sparam.seed;
+	if (seed<0) {random_device true_gen; seed = true_gen();}
+	default_random_engine gen(seed);
 	
 	int player; // player whos turn it is to play
 	int turns[4]; // counter of played turns for each player
@@ -93,7 +95,7 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 		cout << "==========================================" << endl;
 		cout << "singleplayer = " << sparam.singleplayer << endl;
 		cout << "playOneTurn  = " << sparam.playOneTurn << endl;
-		cout << "seed = " << sparam.seed << endl;
+		cout << "seed = " << seed << endl;
 	}
 	
 	//////////////////////////////////////
@@ -437,9 +439,7 @@ void initialiseDefaultParameters(SimulParams &sparam)
 	sparam.singleplayer = false;
 	sparam.playOneTurn = false;
 	sparam.silent = false;
-	
-	random_device true_gen;
-	sparam.seed = true_gen();
+	seed = -1;
 }
 
 
