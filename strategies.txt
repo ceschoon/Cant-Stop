@@ -1,0 +1,43 @@
+Legend
+------
+!!  Required input/parameters for the method
+    Note: The performance can/should be maximised wrt these parameters
+>>  Variants of the method
+
+
+Trivial strategy:
+-----------------
+Always stop after one round.
+Select any combination.
+
+
+No risk strategy:
+-----------------
+Continue until all marker are placed. Note: because this is actually quite 
+risky when many columns are filled, switch to 2 then 1 marker placed once a
+certain number of columns are filled (+ distinguish importance of columns).
+Select combination that require as few markers as possible.
+!! Thumb rule to decide when to switch to trivial strategy.
+
+
+Score-threshold strategies:
+---------------------------
+Continue until a certain score is obtained.
+Select combination that maximises the next score and require as few markers
+as possible.
+!! Need a score function to evaluate the current progression.
+   Should be somehow based on expectancy of progression.
+>> Variant 1: Prioritise the maximisation of the next score.
+>> Variant 2: Prioritise the preservation of markers.
+
+
+Score-expectancy strategies:
+----------------------------
+Continue until expectation of the next score is negative.
+Select combination that maximises the expected score.
+!! Need a score function to evaluate the current progression.
+!! Need a way to evaluate expectancies
+>> Ideal variant: Computation based on simulations of the next rounds.
+>> Pragmatic variants: Thumb rules for expectancies.
+
+
