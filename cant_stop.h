@@ -77,16 +77,16 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 	int player; // player whos turn it is to play
 	int turns[4]; // counter of played turns for each player
 	int columns[11][4]; // col index, player
+	int markers[3][2]; // first [] denotes which of the 3 makers, second [] is to select the marker's column (use [0]) or the position in the column (use [1])
+	int dice[4];
 	
 	player = sstate.player;
 	for (int i=0; i<4; i++) turns[i] = sstate.turns[i];
 	for (int i=0; i<11; i++) for (int j=0; j<4; j++) columns[i][j] = sstate.columns[i][j];
+	for (int i=0; i<3; i++) for (int j=0; j<2; j++) markers[i][j] = sstate.markers[i][j];
 	
 	int colsCompleted[4];
 	for (int i=0; i<4; i++) colsCompleted[i] = 0;
-	
-	int markers[3][2]; // first [] denotes which of the 3 makers, second [] is to select the marker's column (use [0]) or the position in the column (use [1])
-	int dice[4];
 	
 	if (!sparam.silent)
 	{
@@ -114,8 +114,11 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 		
 		// Reset markers and round variables
 		
-		for (int i=0; i<3; i++) markers[i][0] = -1;
-		for (int i=0; i<3; i++) markers[i][1] = -1;
+		if (!sparam.singleplayer || !sparam.playOneTurn)
+		{
+			for (int i=0; i<3; i++) markers[i][0] = -1;
+			for (int i=0; i<3; i++) markers[i][1] = -1;
+		}
 		
 		bool lostRound = false;
 		int roundCounter = 0;
@@ -251,7 +254,7 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 	sstate.winner  = winner;
 	for (int i=0; i<4; i++) sstate.turns[i] = turns[i];
 	for (int i=0; i<11; i++) for (int j=0; j<4; j++) sstate.columns[i][j] = columns[i][j];
-	for (int i=0; i<3; i++) for (int j=0; j<4; j++) sstate.markers[i][j] = markers[i][j];
+	for (int i=0; i<3; i++) for (int j=0; j<2; j++) sstate.markers[i][j] = markers[i][j];
 	
 	
 	/////////////////////////////////////
