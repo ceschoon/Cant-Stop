@@ -28,6 +28,7 @@ struct SimulState
 	int player;
 	int winner;
 	int turns[4];
+	int lostRounds[4];
 	int columns[11][4];
 	int markers[3][2];
 };
@@ -95,6 +96,9 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 	
 	int colsCompleted[4];
 	for (int i=0; i<4; i++) colsCompleted[i] = 0;
+	
+	int lostRounds[4];
+	for (int i=0; i<4; i++) lostRounds[i] = 0;
 	
 	if (!sparam.silent)
 	{
@@ -248,6 +252,10 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 				columns[col][player] = pos;
 			}
 		}
+		else
+		{
+			lostRounds[player]++;
+		}
 		
 		// Count number of completed columns
 		// and update next player
@@ -264,10 +272,12 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 	// Save simulation end state
 	
 	int winner = player-1; if (winner<0) winner += 4;
+	if (sparam.singleplayer) winner = 0;
 	
 	sstate.player  = player;
 	sstate.winner  = winner;
 	for (int i=0; i<4; i++) sstate.turns[i] = turns[i];
+	for (int i=0; i<4; i++) sstate.lostRounds[i] = lostRounds[i];
 	for (int i=0; i<11; i++) for (int j=0; j<4; j++) sstate.columns[i][j] = columns[i][j];
 	for (int i=0; i<3; i++) for (int j=0; j<2; j++) sstate.markers[i][j] = markers[i][j];
 	

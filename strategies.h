@@ -12,6 +12,8 @@ Combination selectCombination_lessMarkersOrAny(int columns[11][4], int markers[3
 
 ////////////////////////////////////////////////////////////////////////////
 
+// "No risk" Strategy
+
 // Choose to stop as soon as all the markers are placed. The idea is to 
 // avoid as much as possible the risk of loosing the current progress,
 // even if it is not much. Because when many columns are filled there is
@@ -19,6 +21,20 @@ Combination selectCombination_lessMarkersOrAny(int columns[11][4], int markers[3
 // we have to switch at some point to 2 then 1 marker placed for the
 // stopping criterion.
 
+// Note: Interestingly, switching to 2 or 1 marker to stop when columns
+// are filled does not improve the performance. So ignoring this problem 
+// and continuing to play untill 3 markers are placed is actually not bad. 
+// As we want this be be a "no risk" strategy, we must however keep the 
+// fraction of lost rounds small. Here, another surprise comes once again
+// from simulations which show that the fraction of lost rounds it quite
+// low even if one plays until 3 markers are placed. We get 0.043 when we
+// always stop at 3 markers (infinite threshold limit) compared to 0.019
+// when we always stop at 1 marker (zero threshold limit). The difference
+// being small and the performance high when we stop at 3 markers, we
+// choose to ignore the issue of filled columns and set the threshold to
+// high "infinite" values.
+
+/*
 int numMarkersPlacedToStop(int columns[11][4])
 {
 	// Weight each column (a less likely column that is filled poses a
@@ -33,7 +49,7 @@ int numMarkersPlacedToStop(int columns[11][4])
 	weights[index(3)] = weights[index(11)] = 2.0;
 	weights[index(2)] = weights[index(12)] = 1.0;
 	
-	double threshold1 = 15.0; // TODO: find values wich work best
+	double threshold1 = 20.0;
 	double threshold2 = 30.0;
 	
 	// Evaluate the current thread posed by the filled columns
@@ -46,6 +62,7 @@ int numMarkersPlacedToStop(int columns[11][4])
 	if (dangerScore>threshold2) return 2;
 	return 3;
 }
+*/
 
 bool decideToStop_noRisk(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations)
 {
@@ -56,7 +73,8 @@ bool decideToStop_noRisk(int columns[11][4], int markers[3][2], int player, vect
 	
 	// Stop if above or equal to max allowed value
 	
-	if (numMarkers >= numMarkersPlacedToStop(columns)) return true;
+	//if (numMarkers >= numMarkersPlacedToStop(columns)) return true;
+	if (numMarkers >= 3) return true;
 	return false;
 }
 

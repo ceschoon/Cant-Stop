@@ -29,7 +29,10 @@ risky when many columns are filled, switch to 2 then 1 marker placed once a
 certain number of columns are filled (+ distinguish importance of columns).
 Select combination that require as few markers as possible.
 !! Thumb rule to decide when to switch to trivial strategy.
-
+>> Variant 1: After using few markers, do not make preferences (any)
+>> Variant 2: After using few markers, prioritise more advanced columns
+>> Variant 3: After using few markers, prioritise extreme columns
+>> Variant 2: After using few markers, prioritise central columns
 
 Score-threshold strategies:
 ---------------------------
