@@ -4,14 +4,21 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-
+// main function to set strategy for each player
 void setStrategy(string s0="", string s1="", string s2="", string s3="");
 
+// stopping methods
 bool decideToStop_noRisk(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
 
+// selection methods
 Combination selectCombination_lessMarkersOrAny(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
+Combination selectCombination_lessMarkersOrBestProg(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
+Combination selectCombination_lessMarkersOrFar7(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
+Combination selectCombination_lessMarkersOrNear7(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
 
-
+// utility functions
+int numMarkersThatWillBeUsed(Combination comb, int markers[3][2]);
+double columnProgression(int columns[11][4], int player, int icol);
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -36,7 +43,7 @@ void setStrategy(string s0, string s1, string s2, string s3)
 			if (i==3) selectCombination_3 = &selectCombination_any;
 		}
 		
-		if (strategies[i] == "No risk") // No risk strategy
+		if (strategies[i] == "No risk")
 		{
 			if (i==0) decideToStop_0 = &decideToStop_noRisk;
 			if (i==1) decideToStop_1 = &decideToStop_noRisk;
@@ -47,6 +54,45 @@ void setStrategy(string s0, string s1, string s2, string s3)
 			if (i==1) selectCombination_1 = &selectCombination_lessMarkersOrAny;
 			if (i==2) selectCombination_2 = &selectCombination_lessMarkersOrAny;
 			if (i==3) selectCombination_3 = &selectCombination_lessMarkersOrAny;
+		}
+		
+		if (strategies[i] == "No risk 2")
+		{
+			if (i==0) decideToStop_0 = &decideToStop_noRisk;
+			if (i==1) decideToStop_1 = &decideToStop_noRisk;
+			if (i==2) decideToStop_2 = &decideToStop_noRisk;
+			if (i==3) decideToStop_3 = &decideToStop_noRisk;
+			
+			if (i==0) selectCombination_0 = &selectCombination_lessMarkersOrBestProg;
+			if (i==1) selectCombination_1 = &selectCombination_lessMarkersOrBestProg;
+			if (i==2) selectCombination_2 = &selectCombination_lessMarkersOrBestProg;
+			if (i==3) selectCombination_3 = &selectCombination_lessMarkersOrBestProg;
+		}
+		
+		if (strategies[i] == "No risk 3")
+		{
+			if (i==0) decideToStop_0 = &decideToStop_noRisk;
+			if (i==1) decideToStop_1 = &decideToStop_noRisk;
+			if (i==2) decideToStop_2 = &decideToStop_noRisk;
+			if (i==3) decideToStop_3 = &decideToStop_noRisk;
+			
+			if (i==0) selectCombination_0 = &selectCombination_lessMarkersOrFar7;
+			if (i==1) selectCombination_1 = &selectCombination_lessMarkersOrFar7;
+			if (i==2) selectCombination_2 = &selectCombination_lessMarkersOrFar7;
+			if (i==3) selectCombination_3 = &selectCombination_lessMarkersOrFar7;
+		}
+		
+		if (strategies[i] == "No risk 4")
+		{
+			if (i==0) decideToStop_0 = &decideToStop_noRisk;
+			if (i==1) decideToStop_1 = &decideToStop_noRisk;
+			if (i==2) decideToStop_2 = &decideToStop_noRisk;
+			if (i==3) decideToStop_3 = &decideToStop_noRisk;
+			
+			if (i==0) selectCombination_0 = &selectCombination_lessMarkersOrNear7;
+			if (i==1) selectCombination_1 = &selectCombination_lessMarkersOrNear7;
+			if (i==2) selectCombination_2 = &selectCombination_lessMarkersOrNear7;
+			if (i==3) selectCombination_3 = &selectCombination_lessMarkersOrNear7;
 		}
 	}
 }
@@ -126,6 +172,51 @@ bool decideToStop_noRisk(int columns[11][4], int markers[3][2], int player, vect
 
 ////////////////////////////////////////////////////////////////////////////
 
+// Utility function
+
+int numMarkersThatWillBeUsed(Combination comb, int markers[3][2])
+{
+	// Calc number of free markers
+	
+	int numFreeMarkers = 0;
+	for (int j=0; j<3; j++) if (markers[j][0]==-1) numFreeMarkers++;
+	
+	// Calc number of new markers that could be used
+	// (looking at the combination and ignoring the markers availability)
+	
+	bool existsMarkerOnVal1 = false;
+	for (int j=0; j<3; j++) if (markers[j][0]==index(comb.val1))
+		existsMarkerOnVal1 = true;
+	
+	bool existsMarkerOnVal2 = false;
+	for (int j=0; j<3; j++) if (markers[j][0]==index(comb.val2))
+		existsMarkerOnVal2 = true;
+	
+	int numNewMarkers = 2;
+	if (existsMarkerOnVal1) numNewMarkers--;
+	if (existsMarkerOnVal2) numNewMarkers--;
+	
+	// Return how many new markers would actually be placed down
+	// (considering now that some markers are not available)
+	
+	return (numNewMarkers<numFreeMarkers)?numNewMarkers:numFreeMarkers;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
+// Utility function
+
+double columnProgression(int columns[11][4], int player, int icol)
+{
+	return double (columns[icol][player]) / height(icol);
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
 // Choose combination that requires to place as few new markers as possible.
 // Do not consider anything else not even to choose between combinations
 // requiring the same number of new markers.
@@ -137,22 +228,187 @@ Combination selectCombination_lessMarkersOrAny(int columns[11][4], int markers[3
 	
 	for (int i=0; i<combinations.size(); i++)
 	{
-		bool existsMarkerOnVal1 = false;
-		for (int j=0; j<3; j++) if (markers[j][0]==index(combinations[i].val1))
-			existsMarkerOnVal1 = true;
-		
-		bool existsMarkerOnVal2 = false;
-		for (int j=0; j<3; j++) if (markers[j][0]==index(combinations[i].val2))
-			existsMarkerOnVal2 = true;
-		
-		int numNewMarkers = 2;
-		if (existsMarkerOnVal1) numNewMarkers--;
-		if (existsMarkerOnVal2) numNewMarkers--;
-		
-		if (numNewMarkers<bestNumNewMarkers) ibest=i;
+		int numNewMarkers = numMarkersThatWillBeUsed(combinations[i],markers);
+		if (numNewMarkers<bestNumNewMarkers)
+		{
+			ibest=i;
+			bestNumNewMarkers = numNewMarkers;
+		}
 	}
 	
 	return combinations[ibest];
+}
+
+
+// Variant where we then select the column with the best progression
+
+Combination selectCombination_lessMarkersOrBestProg(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations)
+{
+	// Find smallest number of new markers achievable
+	
+	int ibest = 0;
+	int bestNumNewMarkers = 2;
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		int numNewMarkers = numMarkersThatWillBeUsed(combinations[i],markers);
+		if (numNewMarkers<bestNumNewMarkers)
+		{
+			ibest=i;
+			bestNumNewMarkers = numNewMarkers;
+		}
+	}
+	
+	// List all combinations equally best (fewest markers)
+	
+	vector<Combination> combinations2;
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		int numNewMarkers = numMarkersThatWillBeUsed(combinations[i],markers);
+		if (numNewMarkers==bestNumNewMarkers) combinations2.push_back(combinations[i]);
+	}
+	
+	// Second selection:
+	// Within the equally best, find the one that has the best progression
+	
+	double bestProgression = 0.0;
+	Combination bestComb = combinations2[0];
+	
+	for (int i=0; i<combinations2.size(); i++)
+	{
+		double prog1 = columnProgression(columns, player, combinations2[i].val1);
+		double prog2 = columnProgression(columns, player, combinations2[i].val2);
+		
+		if (prog1>prog2 && prog1>bestProgression)
+		{
+			bestProgression = prog1;
+			bestComb = {combinations2[i].val1, combinations2[i].val2};
+		}
+		
+		if (prog2>prog1 && prog2>bestProgression)
+		{
+			bestProgression = prog2;
+			bestComb = {combinations2[i].val2, combinations2[i].val1};
+		}
+	}
+	
+	return bestComb;
+}
+
+
+
+// Variant where we then select the most extreme column (futhest from 7)
+
+Combination selectCombination_lessMarkersOrFar7(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations)
+{
+	// Find smallest number of new markers achievable
+	
+	int ibest = 0;
+	int bestNumNewMarkers = 2;
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		int numNewMarkers = numMarkersThatWillBeUsed(combinations[i],markers);
+		if (numNewMarkers<bestNumNewMarkers)
+		{
+			ibest=i;
+			bestNumNewMarkers = numNewMarkers;
+		}
+	}
+	
+	// List all combinations equally best (fewest markers)
+	
+	vector<Combination> combinations2;
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		int numNewMarkers = numMarkersThatWillBeUsed(combinations[i],markers);
+		if (numNewMarkers==bestNumNewMarkers) combinations2.push_back(combinations[i]);
+	}
+	
+	// Second selection:
+	// Within the equally best, find the one in the further from 7
+	
+	int bestDist = 0;
+	Combination bestComb = combinations2[0];
+	
+	for (int i=0; i<combinations2.size(); i++)
+	{
+		double dist1 = abs(combinations2[i].val1-7);
+		double dist2 = abs(combinations2[i].val2-7);
+		
+		if (dist1>dist2 && dist1>bestDist)
+		{
+			bestDist = dist1;
+			bestComb = {combinations2[i].val1, combinations2[i].val2};
+		}
+		
+		if (dist2>dist1 && dist2>bestDist)
+		{
+			bestDist = dist2;
+			bestComb = {combinations2[i].val2, combinations2[i].val1};
+		}
+	}
+	
+	return bestComb;
+}
+
+
+// Variant where we then select the most central column (closest to 7)
+
+Combination selectCombination_lessMarkersOrNear7(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations)
+{
+	// Find smallest number of new markers achievable
+	
+	int ibest = 0;
+	int bestNumNewMarkers = 2;
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		int numNewMarkers = numMarkersThatWillBeUsed(combinations[i],markers);
+		if (numNewMarkers<bestNumNewMarkers)
+		{
+			ibest=i;
+			bestNumNewMarkers = numNewMarkers;
+		}
+	}
+	
+	// List all combinations equally best (fewest markers)
+	
+	vector<Combination> combinations2;
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		int numNewMarkers = numMarkersThatWillBeUsed(combinations[i],markers);
+		if (numNewMarkers==bestNumNewMarkers) combinations2.push_back(combinations[i]);
+	}
+	
+	// Second selection:
+	// Within the equally best, find the one in the most extreme column (e.g. 2 or 12)
+	
+	int bestDist = 0;
+	Combination bestComb = combinations2[0];
+	
+	for (int i=0; i<combinations2.size(); i++)
+	{
+		double dist1 = abs(combinations2[i].val1-7);
+		double dist2 = abs(combinations2[i].val2-7);
+		
+		if (dist1<dist2 && dist1<bestDist)
+		{
+			bestDist = dist1;
+			bestComb = {combinations2[i].val1, combinations2[i].val2};
+		}
+		
+		if (dist2<dist1 && dist2<bestDist)
+		{
+			bestDist = dist2;
+			bestComb = {combinations2[i].val2, combinations2[i].val1};
+		}
+	}
+	
+	return bestComb;
 }
 
 

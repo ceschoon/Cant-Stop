@@ -3,6 +3,7 @@ Legend
 !!  Required input/parameters for the method
     Note: The performance can/should be maximised wrt these parameters
 >>  Variants of the method
+**  Simulation results
 
 
 Evaluation of strategies:
@@ -33,6 +34,7 @@ Select combination that require as few markers as possible.
 >> Variant 2: After using few markers, prioritise more advanced columns
 >> Variant 3: After using few markers, prioritise extreme columns
 >> Variant 2: After using few markers, prioritise central columns
+** Best variant is 3 with a solo score of 13.27
 
 Score-threshold strategies:
 ---------------------------

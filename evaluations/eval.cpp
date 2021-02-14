@@ -19,7 +19,10 @@ using namespace std;
 int main(int argc, char **argv)
 {
 	//setStrategy("Trivial", "Trivial", "Trivial", "Trivial");
-	setStrategy("No risk", "No risk", "No risk", "No risk");
+	//setStrategy("No risk", "No risk", "No risk", "No risk");
+	//setStrategy("No risk 2", "No risk 2", "No risk 2", "No risk 2");
+	//setStrategy("No risk 3", "No risk 3", "No risk 3", "No risk 3");
+	//setStrategy("No risk 4", "No risk 4", "No risk 4", "No risk 4");
 	
 	Statistics stats = simulGames();
 	
