@@ -12,8 +12,6 @@ Combination selectCombination_target(int columns[][4], int markers[][2], int pla
 
 double expectation(int target, int columns[11][4], int markers[3][2], int numGames);
 
-int _target = -1;
-
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +32,7 @@ double expectation(int target, int columns[11][4], int markers[3][2], int numGam
 	if (target>0) selectCombination_0 = &selectCombination_target;
 	else          selectCombination_0 = &selectCombination_any;
 	
-	_target = target;
+	stop_params = &target;
 	
 	
 	////////////////////////////////////////////////
@@ -97,6 +95,7 @@ Combination selectCombination_target(int columns[][4], int markers[][2], int pla
 {
 	// First, search for combinations containing the target value
 	
+	int _target = *(int*) stop_params;
 	vector<Combination> targetcomb;
 	
 	for (int i=0; i<combinations.size(); i++)

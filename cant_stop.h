@@ -41,6 +41,10 @@ struct Combination
 };
 
 
+void *stop_params;
+void *select_params;
+
+
 int min (int a, int b) {return (a<b)?a:b;}
 int index(int num) {return num-2;}
 int height(int i) {return (i<5)?(2*i+3):(23-2*i);}
