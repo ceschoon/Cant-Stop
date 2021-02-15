@@ -9,16 +9,25 @@ void setStrategy(string s0="", string s1="", string s2="", string s3="");
 
 // stopping methods
 bool decideToStop_noRisk(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
+bool decideToStop_score(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
 
 // selection methods
 Combination selectCombination_lessMarkersOrAny(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
 Combination selectCombination_lessMarkersOrBestProg(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
 Combination selectCombination_lessMarkersOrFar7(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
 Combination selectCombination_lessMarkersOrNear7(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
+Combination selectCombination_immediateNextScore(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations);
 
-// utility functions
+// score functions
+void *score_params;
+int (*score_)(int columns[11][4], int markers[3][2], int player);
+int score_1(int columns[11][4], int markers[3][2], int player);
+
+// secondary functions / utility
 int numMarkersThatWillBeUsed(Combination comb, int markers[3][2]);
 double columnProgression(int columns[11][4], int player, int icol);
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -93,6 +102,24 @@ void setStrategy(string s0, string s1, string s2, string s3)
 			if (i==1) selectCombination_1 = &selectCombination_lessMarkersOrNear7;
 			if (i==2) selectCombination_2 = &selectCombination_lessMarkersOrNear7;
 			if (i==3) selectCombination_3 = &selectCombination_lessMarkersOrNear7;
+		}
+		
+		if (strategies[i] == "Next Score 1")
+		{
+			score_ = &score_1;
+			
+			int threshold = 10;
+			stop_params = &threshold;
+			
+			if (i==0) decideToStop_0 = &decideToStop_score;
+			if (i==1) decideToStop_1 = &decideToStop_score;
+			if (i==2) decideToStop_2 = &decideToStop_score;
+			if (i==3) decideToStop_3 = &decideToStop_score;
+			
+			if (i==0) selectCombination_0 = &selectCombination_immediateNextScore;
+			if (i==1) selectCombination_1 = &selectCombination_immediateNextScore;
+			if (i==2) selectCombination_2 = &selectCombination_immediateNextScore;
+			if (i==3) selectCombination_3 = &selectCombination_immediateNextScore;
 		}
 	}
 }
@@ -410,6 +437,176 @@ Combination selectCombination_lessMarkersOrNear7(int columns[11][4], int markers
 	
 	return bestComb;
 }
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
+// Score based on progression in weighted columns
+
+int score_1(int columns[11][4], int markers[3][2], int player)
+{
+	int score = 0;
+	
+	// Progression in weighted columns
+	
+	for (int i=0; i<3; i++)
+	{
+		int val = markers[i][0] + 2;
+		int prog = markers[i][1] - columns[index(val)][player];
+		
+		int weight = 0;
+		if (val==2 || val==12) weight = 10;
+		if (val==3 || val==11) weight = 5;
+		if (val==4 || val==10) weight = 2;
+		if (val==5 || val==9 ) weight = 2;
+		if (val==6 || val==8 ) weight = 1;
+		if (val==7)            weight = 1;
+		
+		score += weight*prog;
+	}
+	
+	
+	// Reward for preserving markers
+	
+	int numFreeMarkers = 0;
+	for (int i=0; i<3; i++) if (markers[i][0]==-1) numFreeMarkers++;
+	
+	score += numFreeMarkers * 3;
+	
+	return score;
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
+
+bool decideToStop_score(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations)
+{
+	int score = score_(columns, markers, player);
+	int threshold = *(int*) stop_params;
+	
+	return (score>threshold)?true:false;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
+
+Combination selectCombination_immediateNextScore(int columns[11][4], int markers_current[3][2], int player, vector<Combination> &combinations)
+{
+	// For each combination, simulate placement of markers and
+	// compute new score
+	
+	int scores_new[combinations.size()];
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		Combination comb = combinations[i];
+		
+		int markers[3][2];
+		for (int j=0; j<3; j++) 
+		{
+			markers[j][0] = markers_current[j][0];
+			markers[j][1] = markers_current[j][1];
+		}
+		
+		int imarker;
+		if ( canBeAdvanced(columns, markers, player, comb.val1, imarker) )
+		{
+			if (markers[imarker][0]==-1) // place
+			{
+				markers[imarker][0] = index(comb.val1);
+				markers[imarker][1] = columns[index(comb.val1)][player]+1;
+			}
+			else markers[imarker][1]++; // advance
+		}
+		
+		if ( canBeAdvanced(columns, markers, player, comb.val2, imarker) &&
+		     comb.val2 != comb.val1 )
+		{
+			if (markers[imarker][0]==-1) // place
+			{
+				markers[imarker][0] = index(comb.val2);
+				markers[imarker][1] = columns[index(comb.val2)][player]+1;
+			}
+			else markers[imarker][1]++; // advance
+		}
+		
+		scores_new[i] = score_(columns, markers, player);
+	}
+	
+	
+	// Do the same for combination in reverse order (val2, val1)
+	// This is not the same because the first value in the combination
+	// is placed first. The second is not placed if there are no markers
+	// left.
+	
+	int scores2_new[combinations.size()];
+	
+	for (int i=0; i<combinations.size(); i++)
+	{
+		Combination comb = {combinations[i].val2, combinations[i].val1};
+		
+		int markers[3][2];
+		for (int j=0; j<3; j++) 
+		{
+			markers[j][0] = markers_current[j][0];
+			markers[j][1] = markers_current[j][1];
+		}
+		
+		int imarker;
+		if ( canBeAdvanced(columns, markers, player, comb.val1, imarker) )
+		{
+			if (markers[imarker][0]==-1) // place
+			{
+				markers[imarker][0] = index(comb.val1);
+				markers[imarker][1] = columns[index(comb.val1)][player]+1;
+			}
+			else markers[imarker][1]++; // advance
+		}
+		
+		if ( canBeAdvanced(columns, markers, player, comb.val2, imarker) &&
+		     comb.val2 != comb.val1 )
+		{
+			if (markers[imarker][0]==-1) // place
+			{
+				markers[imarker][0] = index(comb.val2);
+				markers[imarker][1] = columns[index(comb.val2)][player]+1;
+			}
+			else markers[imarker][1]++; // advance
+		}
+		
+		scores2_new[i] = score_(columns, markers, player);
+	}
+	
+	// Find best score across both sets of combinations
+	
+	int bestScore = scores_new[0];
+	Combination bestComb = combinations[0];
+	
+	for (int i=0; i<combinations.size(); i++) if (scores_new[i]>bestScore)
+	{
+		bestScore = scores_new[i];
+		bestComb = combinations[i];
+	}
+	
+	for (int i=0; i<combinations.size(); i++) if (scores_new[i]>bestScore)
+	{
+		bestScore = scores2_new[i];
+		bestComb = {combinations[i].val2, combinations[i].val1};
+	}
+	
+	return bestComb;
+}
+
+
 
 
 

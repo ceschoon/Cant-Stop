@@ -1,5 +1,5 @@
 old*/
 playground*/
 
-a.out
-out.txt
+*.out
+*.txt

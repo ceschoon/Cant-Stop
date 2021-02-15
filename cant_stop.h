@@ -243,6 +243,9 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 			if (player==1) if (decideToStop_1(columns, markers, player, combinations)) break;
 			if (player==2) if (decideToStop_2(columns, markers, player, combinations)) break;
 			if (player==3) if (decideToStop_3(columns, markers, player, combinations)) break;
+			
+			// Note: if lost more than 100 rounds, force stop everytime
+			//if (lostRounds[player]>100) break;
 		}
 		
 		// Save marker positions if player did not loose the last round

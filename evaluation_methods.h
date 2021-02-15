@@ -5,9 +5,9 @@ using namespace std;
 
 struct Statistics
 {
-	double wins[4];
-	double turns[4];
-	double lostRounds[4];
+	double avg_wins[4];
+	double avg_turns[4];
+	double avg_lostRounds[4];
 };
 
 Statistics simulGames(int numGames=10000, bool singleplayer=false);
@@ -61,6 +61,7 @@ Statistics simulGames(int numGames, bool singleplayer)
 		}
 	}
 	
+	
 	////////////////////////////////////////////////////////
 	// Averaged statistics
 	
@@ -71,14 +72,15 @@ Statistics simulGames(int numGames, bool singleplayer)
 		double sum;
 		
 		sum = 0; for (int i=0; i<numGames; i++) sum += wins[i][p];
-		stats.wins[p] = sum/numGames;
+		stats.avg_wins[p] = sum/numGames;
 		
 		sum = 0; for (int i=0; i<numGames; i++) sum += turns[i][p];
-		stats.turns[p] = sum/numGames;
+		stats.avg_turns[p] = sum/numGames;
 		
 		sum = 0; for (int i=0; i<numGames; i++) sum += lostRounds[i][p];
-		stats.lostRounds[p] = sum/numGames;
+		stats.avg_lostRounds[p] = sum/numGames;
 	}
+	
 	return stats;
 }
 

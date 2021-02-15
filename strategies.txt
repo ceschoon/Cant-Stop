@@ -36,6 +36,7 @@ Select combination that require as few markers as possible.
 >> Variant 2: After using few markers, prioritise central columns
 ** Best variant is 3 with a solo score of 13.27
 
+
 Score-threshold strategies:
 ---------------------------
 Continue until a certain score is obtained.
