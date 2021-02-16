@@ -108,7 +108,7 @@ void setStrategy(string s0, string s1, string s2, string s3)
 		{
 			score_ = &score_1;
 			
-			int threshold = 15;
+			int threshold = 13;
 			stop_params = &threshold;
 			
 			if (i==0) decideToStop_0 = &decideToStop_score;
@@ -460,7 +460,7 @@ int score_1(int columns[11][4], int markers[3][2], int player)
 		int weight = 0;
 		if (val==2 || val==12) weight = 10;
 		if (val==3 || val==11) weight = 5;
-		if (val==4 || val==10) weight = 2;
+		if (val==4 || val==10) weight = 3;
 		if (val==5 || val==9 ) weight = 2;
 		if (val==6 || val==8 ) weight = 1;
 		if (val==7)            weight = 1;
@@ -474,7 +474,7 @@ int score_1(int columns[11][4], int markers[3][2], int player)
 	int numFreeMarkers = 0;
 	for (int i=0; i<3; i++) if (markers[i][0]==-1) numFreeMarkers++;
 	
-	score += numFreeMarkers * 3;
+	score += numFreeMarkers * 0; // NONE is better !?
 	
 	return score;
 }
