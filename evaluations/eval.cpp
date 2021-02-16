@@ -25,7 +25,11 @@ int main(int argc, char **argv)
 	//setStrategy("No risk 4", "No risk 4", "No risk 4", "No risk 4");
 	setStrategy("Next Score 1", "Next Score 1", "Next Score 1", "Next Score 1");
 	
+	//setStrategy("Next Score 1", "No risk 3", "No risk 3", "No risk 3");
+	//setStrategy("No risk 3", "No risk 3", "No risk 3", "Next Score 1");
+	
 	Statistics stats = simulGames(4000, false, true);
+	//simulGames(1, false, false);
 	
 	cout << fixed << setprecision(4);
 	cout << "Avg wins:   "; for (int p=0;p<4;p++) cout << setw(12) << stats.avg_wins[p]; cout << endl;

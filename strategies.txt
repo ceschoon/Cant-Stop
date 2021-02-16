@@ -34,7 +34,7 @@ Select combination that require as few markers as possible.
 >> Variant 2: After using few markers, prioritise more advanced columns
 >> Variant 3: After using few markers, prioritise extreme columns
 >> Variant 2: After using few markers, prioritise central columns
-** Best variant is 3 with a solo score of 13.27
+** Best variant is 3 with a turns-AAAA score of 12.5
 
 
 Score-threshold strategies:
@@ -46,6 +46,11 @@ as possible.
    Should be somehow based on expectancy of progression.
 >> Variant 1: Prioritise the maximisation of the next score.
 >> Variant 2: Prioritise the preservation of markers.
+** Got a turns-AAAA score of 10.9 (score function 1-1-2-3-5-10--13)
+** Simuations show that it is useless to try preserving the markers
+** These score-based strategies fail most often at the end.
+>> They could be improved by switching to a no risk strategy once too
+   many columns are filled.
 
 
 Score-expectancy strategies:
