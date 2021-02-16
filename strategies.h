@@ -108,7 +108,7 @@ void setStrategy(string s0, string s1, string s2, string s3)
 		{
 			score_ = &score_1;
 			
-			int threshold = 13;
+			int threshold = 30;
 			stop_params = &threshold;
 			
 			if (i==0) decideToStop_0 = &decideToStop_score;
@@ -183,6 +183,12 @@ int numMarkersPlacedToStop(int columns[11][4])
 
 bool decideToStop_noRisk(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations)
 {
+	// Stop immediately once a marker completed its column
+	// Note: simulations show that this is actually counterproductive
+	
+	//for (int i=0; i<3; i++) if (markers[i][1]==height(markers[i][0])-1) 
+	//	return true;
+	
 	// Count the number of markers placed
 	
 	int numMarkers = 0;
@@ -468,13 +474,12 @@ int score_1(int columns[11][4], int markers[3][2], int player)
 		score += weight*prog;
 	}
 	
-	
 	// Reward for preserving markers
 	
 	int numFreeMarkers = 0;
 	for (int i=0; i<3; i++) if (markers[i][0]==-1) numFreeMarkers++;
 	
-	score += numFreeMarkers * 0; // NONE is better !?
+	score += numFreeMarkers * 10;
 	
 	return score;
 }
@@ -488,6 +493,13 @@ int score_1(int columns[11][4], int markers[3][2], int player)
 
 bool decideToStop_score(int columns[11][4], int markers[3][2], int player, vector<Combination> &combinations)
 {
+	// Stop immediately once a marker completed its column
+	
+	for (int i=0; i<3; i++) if (markers[i][1]==height(markers[i][0])-1) 
+		return true;
+	
+	// Otherwise act according to the score value
+	
 	int score = score_(columns, markers, player);
 	int threshold = *(int*) stop_params;
 	

@@ -39,18 +39,17 @@ Select combination that require as few markers as possible.
 
 Score-threshold strategies:
 ---------------------------
-Continue until a certain score is obtained.
+Continue until a certain score is obtained or it a column is filled.
 Select combination that maximises the next score and require as few markers
 as possible.
 !! Need a score function to evaluate the current progression.
    Should be somehow based on expectancy of progression.
->> Variant 1: Prioritise the maximisation of the next score.
->> Variant 2: Prioritise the preservation of markers.
-** Got a turns-AAAA score of 10.9 (score function 1-1-2-3-5-10--13)
-** Simuations show that it is useless to try preserving the markers
-** These score-based strategies fail most often at the end.
->> They could be improved by switching to a no risk strategy once too
-   many columns are filled.
+>> xxVariant 1: Prioritise the maximisation of the next score.
+>> xxVariant 2: Prioritise the preservation of markers.
+>> ScoreFct1: 1-1-2-3-5-10--10--30 (format: values--markers--threshold)
+** ScoreFct1 gives a turns-AAAA score of 7.7
+** Stopping when a column is filled is much better for the end of the game
+   (observed turns-AAAA score going from 10.9 to 7.7)
 
 
 Score-expectancy strategies:
