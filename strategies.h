@@ -108,7 +108,7 @@ void setStrategy(string s0, string s1, string s2, string s3)
 		{
 			score_ = &score_1;
 			
-			int threshold = 10;
+			int threshold = 15;
 			stop_params = &threshold;
 			
 			if (i==0) decideToStop_0 = &decideToStop_score;

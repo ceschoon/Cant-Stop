@@ -207,6 +207,8 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 			if (player==2) comb = selectCombination_2(columns, markers, player, combinations);
 			if (player==3) comb = selectCombination_3(columns, markers, player, combinations);
 			
+			//if (!sparam.silent) cout << ">>> Selected combination: {" << comb.val1 << "," << comb.val2 << "}" << endl;
+			
 			int imarker;
 			if ( canBeAdvanced(columns, markers, player, comb.val1, imarker) )
 			{
@@ -229,6 +231,14 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 				else markers[imarker][1]++; // advance
 			}
 			
+			/*if (!sparam.silent) 
+			{
+				cout << "Markers: " << markers[0][0] << " " << markers[0][1] << " , ";
+				cout << markers[1][0] << " " << markers[1][1] << " , ";
+				cout << markers[2][0] << " " << markers[2][1] << " , ";
+				cout << endl;
+			}*/
+			
 			// Print board state after round
 			
 			if (!sparam.silent) 
@@ -244,8 +254,8 @@ int simulGame(SimulParams sparam, SimulState &sstate)
 			if (player==2) if (decideToStop_2(columns, markers, player, combinations)) break;
 			if (player==3) if (decideToStop_3(columns, markers, player, combinations)) break;
 			
-			// Note: if lost more than 100 rounds, force stop everytime
-			//if (lostRounds[player]>100) break;
+			// Note: if lost more than 10 rounds, force stop everytime
+			if (lostRounds[player]>10) break; //TODO: make it a parameter !?
 		}
 		
 		// Save marker positions if player did not loose the last round
@@ -375,11 +385,20 @@ bool canBeAdvanced(int columns[][4], int markers[][2], int player, int num, int 
 	}
 	
 	// Check if there is a marker already on this column
+	// Check if it is on top of the column or not
 	
 	for (int i=0; i<3; i++) if (markers[i][0]==index(num))
 	{
-		imarker = i;
-		return true;
+		if (markers[i][1]==height(index(num))-1)
+		{
+			imarker = -1;
+			return false;
+		}
+		else
+		{
+			imarker = i;
+			return true;
+		}
 	}
 	
 	// Check if there is a marker not yet assigned
