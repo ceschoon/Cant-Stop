@@ -4,6 +4,18 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
+struct ScoreParams
+{
+	int weight2;
+	int weight3;
+	int weight4;
+	int weight5;
+	int weight6;
+	int weight7;
+	int weightM;
+	int threshold;
+};
+
 // main function to set strategy for each player
 void setStrategy(string s0="", string s1="", string s2="", string s3="");
 
@@ -20,8 +32,7 @@ Combination selectCombination_immediateNextScore(int columns[11][4], int markers
 
 // score functions
 void *score_params;
-int (*score_)(int columns[11][4], int markers[3][2], int player);
-int score_1(int columns[11][4], int markers[3][2], int player);
+int score_(int columns[11][4], int markers[3][2], int player);
 
 // secondary functions / utility
 int numMarkersThatWillBeUsed(Combination comb, int markers[3][2]);
@@ -104,12 +115,29 @@ void setStrategy(string s0, string s1, string s2, string s3)
 			if (i==3) selectCombination_3 = &selectCombination_lessMarkersOrNear7;
 		}
 		
-		if (strategies[i] == "Next Score 1")
+		if (strategies[i] == "Next Score 1") // Good against itself, ok vs NoRisk3 too
 		{
-			score_ = &score_1;
+			ScoreParams scp = {10,5,3,2,1,1,10,30};
+			score_params = &scp;
 			
-			int threshold = 30;
-			stop_params = &threshold;
+			if (i==0) decideToStop_0 = &decideToStop_score;
+			if (i==1) decideToStop_1 = &decideToStop_score;
+			if (i==2) decideToStop_2 = &decideToStop_score;
+			if (i==3) decideToStop_3 = &decideToStop_score;
+			
+			if (i==0) selectCombination_0 = &selectCombination_immediateNextScore;
+			if (i==1) selectCombination_1 = &selectCombination_immediateNextScore;
+			if (i==2) selectCombination_2 = &selectCombination_immediateNextScore;
+			if (i==3) selectCombination_3 = &selectCombination_immediateNextScore;
+		}
+		
+		if (strategies[i] == "Next Score 2") // Good against "No Risk 3", ok vs itself too
+		{
+			//ScoreParams scp = {7,4,2,2,1,1,2,15}; // good vs NoRisk3 but medium vs itself
+			//ScoreParams scp = {6,5,4,3,2,1,3,20}; // good vs NoRisk3 but bad vs itself
+			
+			ScoreParams scp = {10,5,3,2,1,1,5,20};
+			score_params = &scp;
 			
 			if (i==0) decideToStop_0 = &decideToStop_score;
 			if (i==1) decideToStop_1 = &decideToStop_score;
@@ -452,34 +480,35 @@ Combination selectCombination_lessMarkersOrNear7(int columns[11][4], int markers
 
 // Score based on progression in weighted columns
 
-int score_1(int columns[11][4], int markers[3][2], int player)
+int score_(int columns[11][4], int markers[3][2], int player)
 {
-	int score = 0;
+	// Get parameters
+	
+	ScoreParams scp = *(ScoreParams*) score_params;
 	
 	// Progression in weighted columns
+	
+	int score = 0;
 	
 	for (int i=0; i<3; i++)
 	{
 		int val = markers[i][0] + 2;
 		int prog = markers[i][1] - columns[index(val)][player];
 		
-		int weight = 0;
-		if (val==2 || val==12) weight = 10;
-		if (val==3 || val==11) weight = 5;
-		if (val==4 || val==10) weight = 3;
-		if (val==5 || val==9 ) weight = 2;
-		if (val==6 || val==8 ) weight = 1;
-		if (val==7)            weight = 1;
-		
-		score += weight*prog;
-	}
+		if (val==2 || val==12) score += scp.weight2 * prog;
+		if (val==3 || val==11) score += scp.weight3 * prog;
+		if (val==4 || val==10) score += scp.weight4 * prog;
+		if (val==5 || val==9 ) score += scp.weight5 * prog;
+		if (val==6 || val==8 ) score += scp.weight6 * prog;
+		if (val==7)            score += scp.weight7 * prog;
+		}
 	
 	// Reward for preserving markers
 	
 	int numFreeMarkers = 0;
 	for (int i=0; i<3; i++) if (markers[i][0]==-1) numFreeMarkers++;
 	
-	score += numFreeMarkers * 10;
+	score += numFreeMarkers * scp.weightM;
 	
 	return score;
 }
@@ -501,9 +530,9 @@ bool decideToStop_score(int columns[11][4], int markers[3][2], int player, vecto
 	// Otherwise act according to the score value
 	
 	int score = score_(columns, markers, player);
-	int threshold = *(int*) stop_params;
+	ScoreParams scp = *(ScoreParams*) score_params;
 	
-	return (score>threshold)?true:false;
+	return (score>scp.threshold)?true:false;
 }
 
 

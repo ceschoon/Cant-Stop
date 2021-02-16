@@ -46,10 +46,14 @@ as possible.
    Should be somehow based on expectancy of progression.
 >> xxVariant 1: Prioritise the maximisation of the next score.
 >> xxVariant 2: Prioritise the preservation of markers.
->> ScoreFct1: 1-1-2-3-5-10--10--30 (format: values--markers--threshold)
-** ScoreFct1 gives a turns-AAAA score of 7.7
+
+>> Score1: 1-1-2-3-5-10--10--30 (optimised against itself) (format: values--markers--threshold)
+** Score1 gives a turns-AAAA score of 7.7
 ** Stopping when a column is filled is much better for the end of the game
    (observed turns-AAAA score going from 10.9 to 7.7)
+
+>> Score2: 1-1-2-3-5-10--5--20 (optimised against NoRisk3)
+** Score2 beats NoRisk3 0.69 of times in ABBB contest
 
 
 Score-expectancy strategies:

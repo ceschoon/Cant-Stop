@@ -15,10 +15,18 @@ struct Statistics
 	double avg_lostRounds[4];
 	double avg_lossFractions[4];
 	
+	double avg_wturns[4];
+	double avg_wlostRounds[4];
+	double avg_wlossFractions[4];
+	
 	double std_wins[4];
 	double std_turns[4];
 	double std_lostRounds[4];
 	double std_lossFractions[4];
+	
+	double std_wturns[4];
+	double std_wlostRounds[4];
+	double std_wlossFractions[4];
 };
 
 Statistics simulGames(int numGames=1000, bool singleplayer=false, bool silent=true);
@@ -96,7 +104,7 @@ Statistics simulGames(int numGames, bool singleplayer, bool silent)
 	
 	for (int p=0; p<4; p++)
 	{
-		double sum;
+		double sum, sum2;
 		
 		sum = 0; for (int i=0; i<numGames; i++) sum += wins[i][p];
 		stats.avg_wins[p] = sum/numGames;
@@ -109,13 +117,25 @@ Statistics simulGames(int numGames, bool singleplayer, bool silent)
 		
 		sum = 0; for (int i=0; i<numGames; i++) sum += double(lostRounds[i][p])/turns[i][p];
 		stats.avg_lossFractions[p] = sum/numGames;
+		
+		sum  = 0; for (int i=0; i<numGames; i++) sum  += wins[i][p]*turns[i][p];
+		sum2 = 0; for (int i=0; i<numGames; i++) sum2 += wins[i][p];
+		stats.avg_wturns[p] = sum/sum2;
+		
+		sum  = 0; for (int i=0; i<numGames; i++) sum  += wins[i][p]*lostRounds[i][p];
+		sum2 = 0; for (int i=0; i<numGames; i++) sum2 += wins[i][p];
+		stats.avg_wlostRounds[p] = sum/sum2;
+		
+		sum  = 0; for (int i=0; i<numGames; i++) sum  += wins[i][p]*double(lostRounds[i][p])/turns[i][p];
+		sum2 = 0; for (int i=0; i<numGames; i++) sum2 += wins[i][p];
+		stats.avg_wlossFractions[p] = sum/sum2;
 	}
 	
 	// Standard deviations
 	
 	for (int p=0; p<4; p++)
 	{
-		double sum;
+		double sum, sum2;
 		
 		sum = 0; for (int i=0; i<numGames; i++) sum += pow(wins[i][p]-stats.avg_wins[p],2);
 		stats.std_wins[p] = sqrt(sum/(numGames-1));
@@ -128,6 +148,18 @@ Statistics simulGames(int numGames, bool singleplayer, bool silent)
 		
 		sum = 0; for (int i=0; i<numGames; i++) sum += pow(double(lostRounds[i][p])/turns[i][p]-stats.avg_lossFractions[p],2);
 		stats.std_lossFractions[p] = sqrt(sum/(numGames-1));
+		
+		sum = 0; for (int i=0; i<numGames; i++) sum += pow(wins[i][p]*turns[i][p]-stats.avg_wturns[p],2);
+		sum2 = 0; for (int i=0; i<numGames; i++) sum2 += wins[i][p];
+		stats.std_wturns[p] = sqrt(sum/(sum2-1));
+		
+		sum = 0; for (int i=0; i<numGames; i++) sum += pow(wins[i][p]*lostRounds[i][p]-stats.avg_wlostRounds[p],2);
+		sum2 = 0; for (int i=0; i<numGames; i++) sum2 += wins[i][p];
+		stats.std_wlostRounds[p] = sqrt(sum/(sum2-1));
+		
+		sum = 0; for (int i=0; i<numGames; i++) sum += pow(wins[i][p]*double(lostRounds[i][p])/turns[i][p]-stats.avg_wlossFractions[p],2);
+		sum2 = 0; for (int i=0; i<numGames; i++) sum2 += wins[i][p];
+		stats.std_wlossFractions[p] = sqrt(sum/(sum2-1));
 	}
 	
 	return stats;
